@@ -14,17 +14,15 @@
         button { background: var(--neon); color: black; border: none; padding: 12px 25px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; }
         .feed { margin-top: 40px; }
         .card { background: #1a1a1a; border-radius: 12px; padding: 15px; margin-bottom: 20px; border-left: 5px solid var(--neon); }
-        .card h3 { margin: 0; color: var(--neon); font-size: 18px; }
-        .card p { color: #ccc; line-height: 1.6; }
+        .card h3 { margin: 0; color: var(--neon); font-size: 18px; display: flex; align-items: center; gap: 10px; }
         .card img { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid #333; }
-        .reply-box { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #444; font-size: 14px; color: #888; }
-        .post-actions { margin-top: 10px; display: flex; gap: 15px; border-top: 1px solid #333; padding-top: 10px; }
-.action-btn { background: none; border: none; color: var(--neon); cursor: pointer; font-size: 14px; }
-.delete-btn { color: #ff4d4d; }
-.reply-section { margin-top: 10px; padding-left: 20px; border-left: 2px solid var(--neon); display: none; }
+        .post-actions { margin-top: 15px; display: flex; gap: 15px; border-top: 1px solid #333; padding-top: 10px; }
+        .action-btn { background: none; border: none; color: var(--neon); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+        .delete-btn { color: #ff4d4d !important; }
+        .reply-section { margin-top: 10px; padding: 10px; background: #222; border-radius: 8px; display: none; }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    </head>
+</head>
 <body>
 
 <div class="container">
@@ -34,98 +32,107 @@
     </header>
 
     <div class="post-box">
-        <!-- IDs yahan fix kar di hain taaki JS se match karein -->
+        <!-- ID Yahan Fix hain -->
         <input type="text" id="nameInput" placeholder="Aapka Naam...">
         <textarea id="messageInput" rows="4" placeholder="Apna Sawal/Problem likhein..."></textarea>
-        <input type="text" id="imgUrlInput" placeholder="Image URL (Optionally paste image link here)">
+        <input type="text" id="imgUrlInput" placeholder="Photo link (URL) paste karein...">
         <button id="postButton">Post to Public Board</button>
     </div>
 
-    <div class="feed" id="postFeed">
-        <!-- Data yahan dikhega -->
-    </div>
+    <div class="feed" id="postFeed"></div>
 </div>
 
-<!-- Firebase Script -->
 <script type="module">
-  // ... (Firebase setup wahi rahega jo pehle tha)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-// 1. Post bhejne ka function (Image URL ke saath)
-window.addPost = function() {
-    const name = document.getElementById('userName').value;
-    const msg = document.getElementById('userMsg').value;
-    const img = document.getElementById('imgUrl').value;
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyA8QyetPW2sVH3CVENKQIhajmQq-N1N4dE",
+        authDomain: "solution-hub-2e11d.firebaseapp.com",
+        projectId: "solution-hub-2e11d",
+        databaseURL: "https://solution-hub-2e11d-default-rtdb.firebaseio.com",
+        storageBucket: "solution-hub-2e11d.firebasestorage.app",
+        messagingSenderId: "1055199293380",
+        appId: "1:1055199293380:web:9b95ec33bc1609d184fe91"
+    };
 
-    if (name === "" || msg === "") {
-        alert("Naam aur Sawal jaruri hai!");
-        return;
-    }
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    const postRef = ref(db, 'posts');
-    const newPostRef = push(postRef);
+    // 1. Post Save karne ka sahi logic
+    document.getElementById('postButton').onclick = function() {
+        const name = document.getElementById('nameInput').value;
+        const msg = document.getElementById('messageInput').value;
+        const img = document.getElementById('imgUrlInput').value;
 
-    set(newPostRef, {
-        username: name,
-        question: msg,
-        image: img,
-        timestamp: Date.now()
-    }).then(() => {
-        alert("Post successful!");
-        // Input saaf karna
-        document.getElementById('userName').value = "";
-        document.getElementById('userMsg').value = "";
-        document.getElementById('imgUrl').value = "";
-    });
-};
+        if (name === "" || msg === "") {
+            alert("Naam aur Sawal jaruri hai!");
+            return;
+        }
 
-// 2. Delete karne ka function
-window.deletePost = function(postId) {
-    if(confirm("Kya aap ye post delete karna chahte hain?")) {
-        set(ref(db, 'posts/' + postId), null)
-        .then(() => alert("Post Deleted!"))
-        .catch((err) => alert("Error: " + err.message));
-    }
-};
+        const postRef = ref(db, 'posts');
+        const newPostRef = push(postRef);
 
-// 3. Reply box dikhane ka function
-window.toggleReply = function(postId) {
-    const replyDiv = document.getElementById('reply-' + postId);
-    replyDiv.style.display = replyDiv.style.display === 'block' ? 'none' : 'block';
-};
+        set(newPostRef, {
+            username: name,
+            question: msg,
+            image: img,
+            timestamp: Date.now()
+        }).then(() => {
+            alert("Post successful!");
+            document.getElementById('nameInput').value = "";
+            document.getElementById('messageInput').value = "";
+            document.getElementById('imgUrlInput').value = "";
+        });
+    };
 
-// 4. Data dikhane wala logic (Icons ke saath)
-onValue(ref(db, 'posts'), (snapshot) => {
-    const postFeed = document.getElementById('postFeed');
-    postFeed.innerHTML = ""; 
-    
-    snapshot.forEach((childSnapshot) => {
-        const data = childSnapshot.val();
-        const key = childSnapshot.key;
+    // 2. Delete Post
+    window.deletePost = function(postId) {
+        if(confirm("Kya aap ye post delete karna chahte hain?")) {
+            remove(ref(db, 'posts/' + postId));
+        }
+    };
+
+    // 3. Toggle Reply
+    window.toggleReply = function(postId) {
+        const replyDiv = document.getElementById('reply-' + postId);
+        replyDiv.style.display = replyDiv.style.display === 'block' ? 'none' : 'block';
+    };
+
+    // 4. Real-time Data Display
+    onValue(ref(db, 'posts'), (snapshot) => {
+        const postFeed = document.getElementById('postFeed');
+        postFeed.innerHTML = ""; 
         
-        const postHtml = `
-            <div class="card">
-                <h3><i class="fas fa-user-circle"></i> \${data.username}</h3>
-                <p>\${data.question}</p>
-                \${data.image ? `<img src="\${data.image}" style="width:100%; border-radius:10px; margin:10px 0;">` : ""}
-                
-                <div class="post-actions">
-                    <button class="action-btn" onclick="toggleReply('\${key}')">
-                        <i class="fas fa-reply"></i> Reply
-                    </button>
-                    <button class="action-btn delete-btn" onclick="deletePost('\${key}')">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
+        snapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
+            const key = childSnapshot.key;
+            
+            const postHtml = `
+                <div class="card">
+                    <h3><i class="fas fa-user-circle"></i> \${data.username}</h3>
+                    <p>\${data.question}</p>
+                    \${data.image ? `<img src="\${data.image}">` : ""}
+                    
+                    <div class="post-actions">
+                        <button class="action-btn" onclick="toggleReply('\${key}')">
+                            <i class="fas fa-reply"></i> Reply
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deletePost('\${key}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
 
-                <div id="reply-\${key}" class="reply-section">
-                    <input type="text" placeholder="Apna jawab likhein..." style="width:80%;">
-                    <button class="action-btn">Send</button>
+                    <div id="reply-\${key}" class="reply-section">
+                        <input type="text" placeholder="Apna jawab likhein...">
+                        <button class="action-btn" style="width: auto; padding: 5px 15px;">Send</button>
+                    </div>
                 </div>
-            </div>
-        `;
-        postFeed.innerHTML = postHtml + postFeed.innerHTML;
+            `;
+            postFeed.innerHTML = postHtml + postFeed.innerHTML;
+        });
     });
-});
 </script>
 
 </body>
