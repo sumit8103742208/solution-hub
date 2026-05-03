@@ -233,10 +233,18 @@ function fakePost(){
             <strong>You</strong>
             <p>Sample post added 😎</p>
             <div class="actions">
-                <button class="action-btn"><i class="fas fa-heart"></i> Like</button>
-                <button class="action-btn"><i class="fas fa-comment"></i> Reply</button>
-                <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
-            </div>
+    <button class="action-btn" onclick="likePost(this)">
+        <i class="fas fa-heart"></i> <span>0</span>
+    </button>
+
+    <button class="action-btn" onclick="replyPost()">
+        <i class="fas fa-comment"></i> Reply
+    </button>
+
+    <button class="action-btn delete-btn" onclick="deletePost(this)">
+        <i class="fas fa-trash"></i>
+    </button>
+</div>
         </div>`;
 
         feed.innerHTML = card + feed.innerHTML;
@@ -335,6 +343,26 @@ function delPost(id) {
     if(confirm("Delete karein?")) {
         db.ref('posts/' + id).remove()
         .catch(err => alert(err.message));
+    }
+}
+    // ❤️ LIKE FUNCTION
+function likePost(btn) {
+    let count = btn.querySelector("span");
+    count.innerText = parseInt(count.innerText) + 1;
+}
+
+// 💬 REPLY FUNCTION
+function replyPost() {
+    let reply = prompt("Apna reply likho:");
+    if(reply) {
+        alert("Reply added: " + reply);
+    }
+}
+
+// 🗑️ DELETE FUNCTION
+function deletePost(btn) {
+    if(confirm("Delete karein?")) {
+        btn.closest(".card").remove();
     }
 }
 
