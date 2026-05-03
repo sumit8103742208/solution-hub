@@ -18,8 +18,13 @@
         .card p { color: #ccc; line-height: 1.6; }
         .card img { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid #333; }
         .reply-box { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #444; font-size: 14px; color: #888; }
+        .post-actions { margin-top: 10px; display: flex; gap: 15px; border-top: 1px solid #333; padding-top: 10px; }
+.action-btn { background: none; border: none; color: var(--neon); cursor: pointer; font-size: 14px; }
+.delete-btn { color: #ff4d4d; }
+.reply-section { margin-top: 10px; padding-left: 20px; border-left: 2px solid var(--neon); display: none; }
     </style>
-</head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
 <body>
 
 <div class="container">
@@ -43,71 +48,84 @@
 
 <!-- Firebase Script -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+  // ... (Firebase setup wahi rahega jo pehle tha)
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyA8QyetPW2sVH3CVENKQIhajmQq-N1N4dE",
-    authDomain: "solution-hub-2e11d.firebaseapp.com",
-    projectId: "solution-hub-2e11d",
-    databaseURL: "https://solution-hub-2e11d-default-rtdb.firebaseio.com",
-    storageBucket: "solution-hub-2e11d.firebasestorage.app",
-    messagingSenderId: "1055199293380",
-    appId: "1:1055199293380:web:9b95ec33bc1609d184fe91"
-  };
+// 1. Post bhejne ka function (Image URL ke saath)
+window.addPost = function() {
+    const name = document.getElementById('userName').value;
+    const msg = document.getElementById('userMsg').value;
+    const img = document.getElementById('imgUrl').value;
 
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
+    if (name === "" || msg === "") {
+        alert("Naam aur Sawal jaruri hai!");
+        return;
+    }
 
-  // POST BHEJNE KE LIYE
-  document.getElementById('postButton').onclick = function(e) {
-      e.preventDefault();
+    const postRef = ref(db, 'posts');
+    const newPostRef = push(postRef);
 
-      const u_name = document.getElementById('nameInput').value;
-      const u_message = document.getElementById('messageInput').value;
-      const u_img = document.getElementById('imgUrlInput').value;
+    set(newPostRef, {
+        username: name,
+        question: msg,
+        image: img,
+        timestamp: Date.now()
+    }).then(() => {
+        alert("Post successful!");
+        // Input saaf karna
+        document.getElementById('userName').value = "";
+        document.getElementById('userMsg').value = "";
+        document.getElementById('imgUrl').value = "";
+    });
+};
 
-      if (u_name == "" || u_message == "") {
-          alert("Naam aur Sawal zaruri hai!");
-          return;
-      }
+// 2. Delete karne ka function
+window.deletePost = function(postId) {
+    if(confirm("Kya aap ye post delete karna chahte hain?")) {
+        set(ref(db, 'posts/' + postId), null)
+        .then(() => alert("Post Deleted!"))
+        .catch((err) => alert("Error: " + err.message));
+    }
+};
 
-      const postListRef = ref(database, 'posts');
-      const newPostRef = push(postListRef);
+// 3. Reply box dikhane ka function
+window.toggleReply = function(postId) {
+    const replyDiv = document.getElementById('reply-' + postId);
+    replyDiv.style.display = replyDiv.style.display === 'block' ? 'none' : 'block';
+};
 
-      set(newPostRef, {
-          username: u_name,
-          question: u_message,
-          image: u_img,
-          time: Date.now()
-      }).then(() => {
-          alert("Success! Board par check karein.");
-          document.getElementById('nameInput').value = "";
-          document.getElementById('messageInput').value = "";
-          document.getElementById('imgUrlInput').value = "";
-      });
-  };
+// 4. Data dikhane wala logic (Icons ke saath)
+onValue(ref(db, 'posts'), (snapshot) => {
+    const postFeed = document.getElementById('postFeed');
+    postFeed.innerHTML = ""; 
+    
+    snapshot.forEach((childSnapshot) => {
+        const data = childSnapshot.val();
+        const key = childSnapshot.key;
+        
+        const postHtml = `
+            <div class="card">
+                <h3><i class="fas fa-user-circle"></i> \${data.username}</h3>
+                <p>\${data.question}</p>
+                \${data.image ? `<img src="\${data.image}" style="width:100%; border-radius:10px; margin:10px 0;">` : ""}
+                
+                <div class="post-actions">
+                    <button class="action-btn" onclick="toggleReply('\${key}')">
+                        <i class="fas fa-reply"></i> Reply
+                    </button>
+                    <button class="action-btn delete-btn" onclick="deletePost('\${key}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
 
-  // DATA DIKHANE KE LIYE (REALTIME FEED)
-  const postFeed = document.getElementById('postFeed');
-  onValue(ref(database, 'posts'), (snapshot) => {
-      postFeed.innerHTML = ""; // Purana clear karo
-      snapshot.forEach((childSnapshot) => {
-          const data = childSnapshot.val();
-          const card = document.createElement('div');
-          card.className = 'card';
-          
-          let imgTag = data.image ? `<img src="${data.image}">` : '';
-          
-          card.innerHTML = `
-              <h3>${data.username}</h3>
-              <p>${data.question}</p>
-              ${imgTag}
-              <div class="reply-box">🗨️ Community Discussion On...</div>
-          `;
-          postFeed.prepend(card); // Naya upar dikhao
-      });
-  });
+                <div id="reply-\${key}" class="reply-section">
+                    <input type="text" placeholder="Apna jawab likhein..." style="width:80%;">
+                    <button class="action-btn">Send</button>
+                </div>
+            </div>
+        `;
+        postFeed.innerHTML = postHtml + postFeed.innerHTML;
+    });
+});
 </script>
 
 </body>
