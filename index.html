@@ -41,6 +41,125 @@ button{
 </head>
 
 <body>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solution Hub</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+}
+
+/* Container */
+.container{
+    width:350px;
+    padding:30px;
+    border-radius:20px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    text-align:center;
+    color:#fff;
+}
+
+/* Title */
+.container h1{
+    margin-bottom:20px;
+    font-weight:600;
+}
+
+/* Inputs */
+.input-box{
+    margin-bottom:15px;
+    text-align:left;
+}
+
+.input-box label{
+    font-size:14px;
+}
+
+.input-box input{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    border:none;
+    border-radius:10px;
+    outline:none;
+}
+
+/* Button */
+.btn{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:25px;
+    background:#ff7eb3;
+    color:#fff;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.btn:hover{
+    background:#ff4f91;
+}
+
+/* Footer */
+.footer{
+    margin-top:15px;
+    font-size:13px;
+    opacity:0.8;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Solution Hub</h1>
+
+    <div class="input-box">
+        <label>Name</label>
+        <input type="text" placeholder="Enter your name">
+    </div>
+
+    <div class="input-box">
+        <label>Email</label>
+        <input type="email" placeholder="Enter your email">
+    </div>
+
+    <div class="input-box">
+        <label>Message</label>
+        <input type="text" placeholder="Enter message">
+    </div>
+
+    <button class="btn">Submit</button>
+
+    <div class="footer">
+        Made with ❤️ by You
+    </div>
+</div>
+
+</body>
+</html>
 
 <div class="container">
     <h1>Solution Hub</h1>
