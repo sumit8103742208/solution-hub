@@ -15,12 +15,14 @@
         .feed { margin-top: 40px; }
         .card { background: #1a1a1a; border-radius: 12px; padding: 15px; margin-bottom: 20px; border-left: 5px solid var(--neon); }
         .card h3 { margin: 0; color: var(--neon); font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .card p { color: #ccc; line-height: 1.6; }
         .card img { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid #333; }
         .post-actions { margin-top: 15px; display: flex; gap: 15px; border-top: 1px solid #333; padding-top: 10px; }
         .action-btn { background: none; border: none; color: var(--neon); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px; }
         .delete-btn { color: #ff4d4d !important; }
         .reply-section { margin-top: 10px; padding: 10px; background: #222; border-radius: 8px; display: none; }
     </style>
+    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -32,14 +34,16 @@
     </header>
 
     <div class="post-box">
-        <!-- ID Yahan Fix hain -->
+        <!-- Input IDs Fixed Here -->
         <input type="text" id="nameInput" placeholder="Aapka Naam...">
         <textarea id="messageInput" rows="4" placeholder="Apna Sawal/Problem likhein..."></textarea>
         <input type="text" id="imgUrlInput" placeholder="Photo link (URL) paste karein...">
         <button id="postButton">Post to Public Board</button>
     </div>
 
-    <div class="feed" id="postFeed"></div>
+    <div class="feed" id="postFeed">
+        <!-- Data will appear here -->
+    </div>
 </div>
 
 <script type="module">
@@ -60,14 +64,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 1. Post Save karne ka sahi logic
+    // 1. Function to Save Post
     document.getElementById('postButton').onclick = function() {
         const name = document.getElementById('nameInput').value;
         const msg = document.getElementById('messageInput').value;
         const img = document.getElementById('imgUrlInput').value;
 
-        if (name === "" || msg === "") {
-            alert("Naam aur Sawal jaruri hai!");
+        if (name.trim() === "" || msg.trim() === "") {
+            alert("Naam aur Sawal likhna jaruri hai!");
             return;
         }
 
@@ -80,27 +84,36 @@
             image: img,
             timestamp: Date.now()
         }).then(() => {
-            alert("Post successful!");
+            alert("Sawal Post ho gaya!");
+            // Clearing Inputs
             document.getElementById('nameInput').value = "";
             document.getElementById('messageInput').value = "";
             document.getElementById('imgUrlInput').value = "";
+        }).catch((error) => {
+            alert("Error: " + error.message);
         });
     };
 
-    // 2. Delete Post
+    // 2. Global Delete Function
     window.deletePost = function(postId) {
-        if(confirm("Kya aap ye post delete karna chahte hain?")) {
-            remove(ref(db, 'posts/' + postId));
+        if(confirm("Kya aap such me ye post delete karna chahte hain?")) {
+            remove(ref(db, 'posts/' + postId))
+            .then(() => alert("Post delete ho gayi!"))
+            .catch((error) => alert("Error: " + error.message));
         }
     };
 
-    // 3. Toggle Reply
+    // 3. Toggle Reply Section
     window.toggleReply = function(postId) {
         const replyDiv = document.getElementById('reply-' + postId);
-        replyDiv.style.display = replyDiv.style.display === 'block' ? 'none' : 'block';
+        if (replyDiv.style.display === 'block') {
+            replyDiv.style.display = 'none';
+        } else {
+            replyDiv.style.display = 'block';
+        }
     };
 
-    // 4. Real-time Data Display
+    // 4. Load Posts in Real-time
     onValue(ref(db, 'posts'), (snapshot) => {
         const postFeed = document.getElementById('postFeed');
         postFeed.innerHTML = ""; 
@@ -113,7 +126,7 @@
                 <div class="card">
                     <h3><i class="fas fa-user-circle"></i> \${data.username}</h3>
                     <p>\${data.question}</p>
-                    \${data.image ? `<img src="\${data.image}">` : ""}
+                    \${data.image ? `<img src="\${data.image}" alt="Post Image">` : ""}
                     
                     <div class="post-actions">
                         <button class="action-btn" onclick="toggleReply('\${key}')">
@@ -130,6 +143,7 @@
                     </div>
                 </div>
             `;
+            // Newest posts on top
             postFeed.innerHTML = postHtml + postFeed.innerHTML;
         });
     });
