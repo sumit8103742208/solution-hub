@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solution Hub - Public Board</title>
+    <style>
+        :root { --neon: #deff9a; --bg: #0a0a0a; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        header { text-align: center; border-bottom: 2px solid var(--neon); padding-bottom: 20px; }
+        
+        /* Input Box */
+        .post-box { background: #111; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #333; }
+        input, textarea { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; margin-bottom: 10px; border-radius: 8px; box-sizing: border-box; }
+        button { background: var(--neon); color: black; border: none; padding: 12px 25px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; }
+        
+        /* Feed Section */
+        .feed { margin-top: 40px; }
+        .card { background: #1a1a1a; border-radius: 12px; padding: 15px; margin-bottom: 20px; border-left: 5px solid var(--neon); }
+        .card h3 { margin: 0; color: var(--neon); font-size: 18px; }
+        .card p { color: #ccc; line-height: 1.6; }
+        .card img { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid #333; }
+        .reply-box { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #444; font-size: 14px; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>💡 Solution Hub Board</h1>
+        <p>Bina login ke apna sawal post karein aur community se jawab payein.</p>
+    </header>
+
+    <div class="post-box">
+        <input type="text" id="userName" placeholder="Aapka Naam...">
+        <textarea id="userMsg" rows="4" placeholder="Apna Sawal/Problem likhein..."></textarea>
+        <input type="text" id="imgUrl" placeholder="Image URL (Optionally paste image link here)">
+        <button onclick="addPost()">Post to Public Board</button>
+    </div>
+
+    <div class="feed" id="postFeed">
+        </div>
+</div>
+
+<script>
+    // Local storage used for demo (Actual database setup needed for global visibility)
+    function addPost() {
+        const name = document.getElementById('userName').value;
+        const msg = document.getElementById('userMsg').value;
+        const img = document.getElementById('imgUrl').value;
+        
+        if(name === "" || msg === "") { alert("Naam aur Sawal zaruri hai!"); return; }
+
+        const feed = document.getElementById('postFeed');
+        const newPost = document.createElement('div');
+        newPost.className = 'card';
+        
+        let imageHtml = img ? `<img src="${img}" alt="Problem Image">` : '';
+
+        newPost.innerHTML = `
+            <h3>${name}</h3>
+            <p>${msg}</p>
+            ${imageHtml}
+            <div class="reply-box">🗨️ Community Discussion On...</div>
+        `;
+
+        feed.prepend(newPost);
+        
+        // Clear Inputs
+        document.getElementById('userName').value = "";
+        document.getElementById('userMsg').value = "";
+        document.getElementById('imgUrl').value = "";
+    }
+</script>
+
+</body>
+</html>
