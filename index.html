@@ -74,27 +74,58 @@
     }
 </script>
 <script type="module">
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+<script type="module">
+  // 1. ज़रूरी चीज़ें इंपोर्ट करना (डेटाबेस के लिए)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyA8QyetPW2sVH3CVENKQIhajmQq-N1N4dE",
-  authDomain: "solution-hub-2e11d.firebaseapp.com",
-  projectId: "solution-hub-2e11d",
-  storageBucket: "solution-hub-2e11d.firebasestorage.app",
-  messagingSenderId: "1055199293380",
-  appId: "1:1055199293380:web:9b95ec33bc1609d184fe91",
-  measurementId: "G-G0VTM8YGJY"
-};
+  // 2. आपका कॉन्फ़िगरेशन (इसमें मैंने databaseURL जोड़ दिया है)
+  const firebaseConfig = {
+    apiKey: "AIzaSyA8QyetPW2sVH3CVENKQIhajmQq-N1N4dE",
+    authDomain: "solution-hub-2e11d.firebaseapp.com",
+    projectId: "solution-hub-2e11d",
+    databaseURL: "https://solution-hub-2e11d-default-rtdb.firebaseio.com", // यह सबसे ज़रूरी लाइन है
+    storageBucket: "solution-hub-2e11d.firebasestorage.app",
+    messagingSenderId: "1055199293380",
+    appId: "1:1055199293380:web:9b95ec33bc1609d184fe91"
+  };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+  // 3. Firebase शुरू करना
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
+  // 4. बटन पर क्लिक होने पर क्या होगा
+  document.getElementById('postButton').onclick = function(e) {
+      e.preventDefault(); // पेज को रिफ्रेश होने से रोकना
+
+      // बॉक्स से नाम और मैसेज उठाना (पक्का कर लेना कि HTML में यही ID हैं)
+      const u_name = document.getElementById('nameInput').value;
+      const u_message = document.getElementById('messageInput').value;
+
+      // अगर खाली है तो एरर दिखाना
+      if (u_name == "" || u_message == "") {
+          alert("Naam aur Sawal zaruri hai!");
+          return;
+      }
+
+      // डेटाबेस में 'posts' नाम के फोल्डर में भेजना
+      const postListRef = ref(database, 'posts');
+      const newPostRef = push(postListRef);
+
+      set(newPostRef, {
+          username: u_name,
+          question: u_message,
+          time: Date.now()
+      }).then(() => {
+          alert("Data Save Ho Gaya!"); // यहाँ मैसेज आएगा अगर सब सही रहा
+          document.getElementById('nameInput').value = ""; // बॉक्स खाली करना
+          document.getElementById('messageInput').value = "";
+      }).catch((error) => {
+          alert("Error: " + error.message);
+      });
+  };
+</script>
+  
 </script>
 </body>
 </html>
