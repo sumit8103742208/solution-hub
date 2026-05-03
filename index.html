@@ -4,318 +4,102 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Solution Hub</title>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-
 body{
-    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    background:#0f2027;
     color:#fff;
+    font-family:Poppins;
 }
 
 .container{
-    max-width:700px;
+    max-width:600px;
     margin:auto;
     padding:20px;
-}
-
-h1{
-    text-align:center;
-    font-size:34px;
-    color:#deff9a;
-}
-
-.description{
-    text-align:center;
-    font-size:14px;
-    color:#aaa;
-    margin-bottom:25px;
-}
-
-.input-box{
-    background:rgba(255,255,255,0.05);
-    backdrop-filter: blur(20px);
-    padding:20px;
-    border-radius:20px;
-    margin-bottom:25px;
-    border:1px solid rgba(255,255,255,0.1);
-    box-shadow:0 15px 30px rgba(0,0,0,0.6);
 }
 
 input, textarea{
     width:100%;
-    padding:12px;
     margin:8px 0;
-    border:none;
-    border-radius:12px;
-    background:#111;
-    color:#fff;
-    outline:none;
-    transition:0.3s;
-}
-
-input:focus, textarea:focus{
-    border:1px solid #deff9a;
-    box-shadow:0 0 12px #deff9a66;
+    padding:10px;
 }
 
 button{
+    padding:10px;
     width:100%;
-    padding:14px;
-    border:none;
-    border-radius:12px;
-    background: linear-gradient(45deg,#deff9a,#a8ff78);
-    color:#000;
-    font-weight:bold;
     cursor:pointer;
-    transition:0.3s;
-}
-
-button:hover{
-    transform:scale(1.06);
-    box-shadow:0 0 20px #deff9a;
 }
 
 .card{
-    background:rgba(255,255,255,0.05);
-    backdrop-filter: blur(12px);
-    padding:18px;
-    border-radius:18px;
-    margin-bottom:15px;
-    border-left:5px solid #deff9a;
-    box-shadow:0 10px 25px rgba(0,0,0,0.5);
-    transition:0.3s;
-    position:relative;
+    background:#222;
+    padding:15px;
+    margin:10px 0;
 }
-
-.card:hover{
-    transform:translateY(-6px) scale(1.01);
-}
-
-.card strong{
-    color:#deff9a;
-    font-size:16px;
-}
-
-.post-img{
-    width:100%;
-    border-radius:12px;
-    margin-top:10px;
-}
-
-.actions{
-    display:flex;
-    justify-content:space-between;
-    margin-top:10px;
-}
-
-.action-btn{
-    background:none;
-    border:none;
-    color:#ccc;
-    cursor:pointer;
-    font-size:14px;
-    transition:0.2s;
-}
-
-.action-btn:hover{
-    color:#deff9a;
-}
-
-.delete-btn{
-    color:#ff4d4d;
-}
-
-/* Floating Button */
-.fab{
-    position:fixed;
-    bottom:20px;
-    right:20px;
-    background:#deff9a;
-    color:#000;
-    width:55px;
-    height:55px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:22px;
-    box-shadow:0 0 15px #deff9a;
-    cursor:pointer;
-    transition:0.3s;
-}
-
-.fab:hover{
-    transform:scale(1.1);
-}
-
-/* Toggle Mode */
-.toggle{
-    position:fixed;
-    top:20px;
-    right:20px;
-    cursor:pointer;
-    font-size:18px;
-}
-
-.light-mode{
-    background:#f5f5f5;
-    color:#111;
-}
-
-.light-mode .input-box,
-.light-mode .card{
-    background:#fff;
-    color:#000;
-}
-
-.light-mode input,
-.light-mode textarea{
-    background:#eee;
-    color:#000;
-}
-
-/* Loader */
-.loader{
-    display:none;
-    margin:auto;
-    border:4px solid #333;
-    border-top:4px solid #deff9a;
-    border-radius:50%;
-    width:40px;
-    height:40px;
-    animation:spin 1s linear infinite;
-}
-
-@keyframes spin{
-    0%{transform:rotate(0deg);} 
-    100%{transform:rotate(360deg);} 
-}
-
 </style>
 </head>
 
 <body>
 
-<div class="toggle" onclick="toggleMode()">🌙</div>
-
 <div class="container">
-    <h1>💡 Solution Hub</h1>
-    <p class="description">Ask doubts, share knowledge, grow together 🚀</p>
+    <h1>Solution Hub</h1>
 
-    <div class="input-box">
-        <input type="text" placeholder="Enter your name">
-        <textarea placeholder="Ask your question..."></textarea>
-        <input type="text" placeholder="Image link (optional)">
-        <button onclick="fakePost()"><i class="fas fa-paper-plane"></i> Post Now</button>
-        <div class="loader" id="loader"></div>
-    </div>
+    <input type="text" id="name" placeholder="Enter your name">
+    <textarea id="msg" placeholder="Ask question"></textarea>
+    <input type="text" id="img" placeholder="Image link">
+
+    <!-- 🔥 FIX -->
+    <button onclick="sendPost()">Post</button>
 
     <div id="feed"></div>
 </div>
-
-<div class="fab" onclick="scrollToTop()">⬆</div>
-
-<script>
-
-function fakePost(){
-    const loader = document.getElementById('loader');
-    loader.style.display = 'block';
-
-    setTimeout(()=>{
-        loader.style.display = 'none';
-
-        const feed = document.getElementById('feed');
-        const card = `
-        <div class="card">
-            <strong>You</strong>
-            <p>Sample post added 😎</p>
-            <div class="actions">
-    <button class="action-btn" onclick="likePost(this)">
-        <i class="fas fa-heart"></i> <span>0</span>
-    </button>
-
-    <button class="action-btn" onclick="replyPost()">
-        <i class="fas fa-comment"></i> Reply
-    </button>
-
-    <button class="action-btn delete-btn" onclick="deletePost(this)">
-        <i class="fas fa-trash"></i>
-    </button>
-</div>
-        </div>`;
-
-        feed.innerHTML = card + feed.innerHTML;
-
-    },1000);
-}
-
-function toggleMode(){
-    document.body.classList.toggle('light-mode');
-}
-
-function scrollToTop(){
-    window.scrollTo({top:0, behavior:'smooth'});
-}
-
-</script>
-
-</body>
-</html>
-
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-</script>
 <script>
-// 🔥 Firebase Config (अपना सही डालना)
+
+// 🔥 Firebase Config (अपना डाल)
 const firebaseConfig = {
-  apiKey: "PASTE_HERE",
-  authDomain: "PASTE_HERE",
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
   databaseURL: "https://solution-hub-2e11d-default-rtdb.firebaseio.com",
-  projectId: "PASTE_HERE",
-  storageBucket: "PASTE_HERE",
-  messagingSenderId: "PASTE_HERE",
-  appId: "PASTE_HERE"
+  projectId: "YOUR_PROJECT_ID",
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ✅ POST FUNCTION
-function sendPost() {
+
+// ✅ POST
+function sendPost(){
     const name = document.getElementById("name").value.trim();
     const msg = document.getElementById("msg").value.trim();
     const img = document.getElementById("img").value.trim();
 
-    if (!name || !msg) {
+    if(!name || !msg){
         alert("Naam aur question likho!");
         return;
     }
 
     db.ref("posts").push({
-        name: name,
-        msg: msg,
-        img: img || ""
-    })
-    .then(() => {
-        document.getElementById("name").value = "";
-        document.getElementById("msg").value = "";
-        document.getElementById("img").value = "";
-    })
-    .catch(err => alert(err.message));
+        name, msg, img
+    });
+
+    document.getElementById("name").value="";
+    document.getElementById("msg").value="";
+    document.getElementById("img").value="";
 }
 
-// ✅ REALTIME DATA SHOW
-db.ref("posts").on("value", (snapshot) => {
-    const feed = document.getElementById("feed");
-    let html = "";
 
-    snapshot.forEach(child => {
+// ✅ REALTIME LOAD
+db.ref("posts").on("value", snapshot=>{
+    const feed = document.getElementById("feed");
+    let html="";
+
+    snapshot.forEach(child=>{
         const data = child.val();
         const id = child.key;
 
@@ -323,21 +107,9 @@ db.ref("posts").on("value", (snapshot) => {
         <div class="card">
             <strong>${data.name}</strong>
             <p>${data.msg}</p>
-            ${data.img ? `<img src="${data.img}" class="post-img">` : ""}
+            ${data.img ? `<img src="${data.img}" width="100%">` : ""}
 
-            <div class="actions">
-                <button class="action-btn" onclick="likePost(this)">
-                    ❤️ <span>0</span>
-                </button>
-
-                <button class="action-btn" onclick="replyPost()">
-                    💬 Reply
-                </button>
-
-                <button class="action-btn delete-btn" onclick="deletePost('${id}')">
-                    🗑️
-                </button>
-            </div>
+            <button onclick="deletePost('${id}')">Delete</button>
         </div>
         ` + html;
     });
@@ -345,36 +117,12 @@ db.ref("posts").on("value", (snapshot) => {
     feed.innerHTML = html;
 });
 
-// ✅ DELETE FROM FIREBASE
-function deletePost(id) {
-    if (confirm("Delete karein?")) {
-        db.ref("posts/" + id).remove();
-    }
+
+// ✅ DELETE
+function deletePost(id){
+    db.ref("posts/"+id).remove();
 }
 
-// ❤️ LIKE
-function likePost(btn) {
-    let span = btn.querySelector("span");
-    span.innerText = parseInt(span.innerText) + 1;
-}
-
-// 💬 REPLY
-function replyPost() {
-    let reply = prompt("Reply likho:");
-    if (reply) {
-        alert("Reply: " + reply);
-    }
-}
-
-// 🌙 MODE
-function toggleMode(){
-    document.body.classList.toggle('light-mode');
-}
-
-// ⬆ SCROLL
-function scrollToTop(){
-    window.scrollTo({top:0, behavior:'smooth'});
-}
 </script>
 
 </body>
