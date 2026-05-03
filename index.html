@@ -270,9 +270,9 @@ function scrollToTop(){
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+</script>
 <script>
-
-// 🔴 IMPORTANT: Apna REAL config yaha paste karo
+// 🔥 Firebase Config (अपना सही डालना)
 const firebaseConfig = {
   apiKey: "PASTE_HERE",
   authDomain: "PASTE_HERE",
@@ -288,90 +288,93 @@ const db = firebase.database();
 
 // ✅ POST FUNCTION
 function sendPost() {
-    const uName = document.getElementById('name').value.trim();
-    const uMsg = document.getElementById('msg').value.trim();
-    const uImg = document.getElementById('img').value.trim();
+    const name = document.getElementById("name").value.trim();
+    const msg = document.getElementById("msg").value.trim();
+    const img = document.getElementById("img").value.trim();
 
-    if(!uName || !uMsg) {
-        alert("Naam aur sawal likho!");
+    if (!name || !msg) {
+        alert("Naam aur question likho!");
         return;
     }
 
-    db.ref('posts').push({
-        name: uName,
-        msg: uMsg,
-        img: uImg || ""
+    db.ref("posts").push({
+        name: name,
+        msg: msg,
+        img: img || ""
     })
     .then(() => {
-        alert("Post ho gaya!");
-        document.getElementById('name').value = "";
-        document.getElementById('msg').value = "";
-        document.getElementById('img').value = "";
+        document.getElementById("name").value = "";
+        document.getElementById("msg").value = "";
+        document.getElementById("img").value = "";
     })
-    .catch((err) => {
-        console.error(err);
-        alert("Error: " + err.message);
-    });
+    .catch(err => alert(err.message));
 }
 
 // ✅ REALTIME DATA SHOW
-db.ref('posts').on('value', (snap) => {
-    const feed = document.getElementById('feed');
+db.ref("posts").on("value", (snapshot) => {
+    const feed = document.getElementById("feed");
     let html = "";
 
-    snap.forEach((child) => {
+    snapshot.forEach(child => {
         const data = child.val();
         const id = child.key;
 
         html = `
-            <div class="card">
-                <strong style="color:#deff9a;">${data.name}</strong>
-                <p>${data.msg}</p>
-                ${data.img ? `<img src="${data.img}" class="post-img">` : ""}
-                <button class="delete-btn" onclick="delPost('${id}')">
-                    <i class="fas fa-trash"></i> Delete
+        <div class="card">
+            <strong>${data.name}</strong>
+            <p>${data.msg}</p>
+            ${data.img ? `<img src="${data.img}" class="post-img">` : ""}
+
+            <div class="actions">
+                <button class="action-btn" onclick="likePost(this)">
+                    ❤️ <span>0</span>
+                </button>
+
+                <button class="action-btn" onclick="replyPost()">
+                    💬 Reply
+                </button>
+
+                <button class="action-btn delete-btn" onclick="deletePost('${id}')">
+                    🗑️
                 </button>
             </div>
+        </div>
         ` + html;
     });
 
     feed.innerHTML = html;
 });
 
-// ✅ DELETE FUNCTION
-function delPost(id) {
-    if(confirm("Delete karein?")) {
-        db.ref('posts/' + id).remove()
-        .catch(err => alert(err.message));
+// ✅ DELETE FROM FIREBASE
+function deletePost(id) {
+    if (confirm("Delete karein?")) {
+        db.ref("posts/" + id).remove();
     }
 }
-    // ❤️ LIKE FUNCTION
+
+// ❤️ LIKE
 function likePost(btn) {
-    let count = btn.querySelector("span");
-    count.innerText = parseInt(count.innerText) + 1;
+    let span = btn.querySelector("span");
+    span.innerText = parseInt(span.innerText) + 1;
 }
 
-// 💬 REPLY FUNCTION
+// 💬 REPLY
 function replyPost() {
-    let reply = prompt("Apna reply likho:");
-    if(reply) {
-        alert("Reply added: " + reply);
+    let reply = prompt("Reply likho:");
+    if (reply) {
+        alert("Reply: " + reply);
     }
 }
 
-// 🗑️ DELETE FUNCTION
-function deletePost(btn) {
-    if(confirm("Delete karein?")) {
-        btn.closest(".card").remove();
-    }
-}
-    function replyPost() {
-    let reply = prompt("Apna reply likho:");
-    if(reply) {
-        alert("Reply added: " + reply);
-    }
+// 🌙 MODE
+function toggleMode(){
+    document.body.classList.toggle('light-mode');
 }
 
+// ⬆ SCROLL
+function scrollToTop(){
+    window.scrollTo({top:0, behavior:'smooth'});
+}
 </script>
 
 </body>
