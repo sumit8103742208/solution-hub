@@ -9,13 +9,9 @@
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: auto; }
         header { text-align: center; border-bottom: 2px solid var(--neon); padding-bottom: 20px; }
-        
-        /* Input Box */
         .post-box { background: #111; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #333; }
         input, textarea { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; margin-bottom: 10px; border-radius: 8px; box-sizing: border-box; }
         button { background: var(--neon); color: black; border: none; padding: 12px 25px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; }
-        
-        /* Feed Section */
         .feed { margin-top: 40px; }
         .card { background: #1a1a1a; border-radius: 12px; padding: 15px; margin-bottom: 20px; border-left: 5px solid var(--neon); }
         .card h3 { margin: 0; color: var(--neon); font-size: 18px; }
@@ -33,99 +29,86 @@
     </header>
 
     <div class="post-box">
-        <input type="text" id="userName" placeholder="Aapka Naam...">
-        <textarea id="userMsg" rows="4" placeholder="Apna Sawal/Problem likhein..."></textarea>
-        <input type="text" id="imgUrl" placeholder="Image URL (Optionally paste image link here)">
-        <button onclick="addPost()">Post to Public Board</button>
+        <!-- IDs yahan fix kar di hain taaki JS se match karein -->
+        <input type="text" id="nameInput" placeholder="Aapka Naam...">
+        <textarea id="messageInput" rows="4" placeholder="Apna Sawal/Problem likhein..."></textarea>
+        <input type="text" id="imgUrlInput" placeholder="Image URL (Optionally paste image link here)">
+        <button id="postButton">Post to Public Board</button>
     </div>
 
     <div class="feed" id="postFeed">
-        </div>
+        <!-- Data yahan dikhega -->
+    </div>
 </div>
 
-<script>
-    // Local storage used for demo (Actual database setup needed for global visibility)
-    function addPost() {
-        const name = document.getElementById('userName').value;
-        const msg = document.getElementById('userMsg').value;
-        const img = document.getElementById('imgUrl').value;
-        
-        if(name === "" || msg === "") { alert("Naam aur Sawal zaruri hai!"); return; }
-
-        const feed = document.getElementById('postFeed');
-        const newPost = document.createElement('div');
-        newPost.className = 'card';
-        
-        let imageHtml = img ? `<img src="${img}" alt="Problem Image">` : '';
-
-        newPost.innerHTML = `
-            <h3>${name}</h3>
-            <p>${msg}</p>
-            ${imageHtml}
-            <div class="reply-box">🗨️ Community Discussion On...</div>
-        `;
-
-        feed.prepend(newPost);
-        
-        // Clear Inputs
-        document.getElementById('userName').value = "";
-        document.getElementById('userMsg').value = "";
-        document.getElementById('imgUrl').value = "";
-    }
-</script>
+<!-- Firebase Script -->
 <script type="module">
-<script type="module">
-  // 1. ज़रूरी चीज़ें इंपोर्ट करना (डेटाबेस के लिए)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+  import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-  // 2. आपका कॉन्फ़िगरेशन (इसमें मैंने databaseURL जोड़ दिया है)
   const firebaseConfig = {
     apiKey: "AIzaSyA8QyetPW2sVH3CVENKQIhajmQq-N1N4dE",
     authDomain: "solution-hub-2e11d.firebaseapp.com",
     projectId: "solution-hub-2e11d",
-    databaseURL: "https://solution-hub-2e11d-default-rtdb.firebaseio.com", // यह सबसे ज़रूरी लाइन है
+    databaseURL: "https://solution-hub-2e11d-default-rtdb.firebaseio.com",
     storageBucket: "solution-hub-2e11d.firebasestorage.app",
     messagingSenderId: "1055199293380",
     appId: "1:1055199293380:web:9b95ec33bc1609d184fe91"
   };
 
-  // 3. Firebase शुरू करना
   const app = initializeApp(firebaseConfig);
   const database = getDatabase(app);
 
-  // 4. बटन पर क्लिक होने पर क्या होगा
+  // POST BHEJNE KE LIYE
   document.getElementById('postButton').onclick = function(e) {
-      e.preventDefault(); // पेज को रिफ्रेश होने से रोकना
+      e.preventDefault();
 
-      // बॉक्स से नाम और मैसेज उठाना (पक्का कर लेना कि HTML में यही ID हैं)
       const u_name = document.getElementById('nameInput').value;
       const u_message = document.getElementById('messageInput').value;
+      const u_img = document.getElementById('imgUrlInput').value;
 
-      // अगर खाली है तो एरर दिखाना
       if (u_name == "" || u_message == "") {
           alert("Naam aur Sawal zaruri hai!");
           return;
       }
 
-      // डेटाबेस में 'posts' नाम के फोल्डर में भेजना
       const postListRef = ref(database, 'posts');
       const newPostRef = push(postListRef);
 
       set(newPostRef, {
           username: u_name,
           question: u_message,
+          image: u_img,
           time: Date.now()
       }).then(() => {
-          alert("Data Save Ho Gaya!"); // यहाँ मैसेज आएगा अगर सब सही रहा
-          document.getElementById('nameInput').value = ""; // बॉक्स खाली करना
+          alert("Success! Board par check karein.");
+          document.getElementById('nameInput').value = "";
           document.getElementById('messageInput').value = "";
-      }).catch((error) => {
-          alert("Error: " + error.message);
+          document.getElementById('imgUrlInput').value = "";
       });
   };
+
+  // DATA DIKHANE KE LIYE (REALTIME FEED)
+  const postFeed = document.getElementById('postFeed');
+  onValue(ref(database, 'posts'), (snapshot) => {
+      postFeed.innerHTML = ""; // Purana clear karo
+      snapshot.forEach((childSnapshot) => {
+          const data = childSnapshot.val();
+          const card = document.createElement('div');
+          card.className = 'card';
+          
+          let imgTag = data.image ? `<img src="${data.image}">` : '';
+          
+          card.innerHTML = `
+              <h3>${data.username}</h3>
+              <p>${data.question}</p>
+              ${imgTag}
+              <div class="reply-box">🗨️ Community Discussion On...</div>
+          `;
+          postFeed.prepend(card); // Naya upar dikhao
+      });
+  });
 </script>
-  
-</script>
+
 </body>
 </html>
