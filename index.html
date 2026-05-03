@@ -19,10 +19,9 @@
         .card img { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid #333; }
         .post-actions { margin-top: 15px; display: flex; gap: 15px; border-top: 1px solid #333; padding-top: 10px; }
         .action-btn { background: none; border: none; color: var(--neon); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px; }
-        .delete-btn { color: #ff4d4d !important; }
+        .delete-btn { color: #ff4d4d; }
         .reply-section { margin-top: 10px; padding: 10px; background: #222; border-radius: 8px; display: none; }
     </style>
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -34,23 +33,19 @@
     </header>
 
     <div class="post-box">
-        <!-- Input IDs Fixed Here -->
         <input type="text" id="nameInput" placeholder="Aapka Naam...">
         <textarea id="messageInput" rows="4" placeholder="Apna Sawal/Problem likhein..."></textarea>
-        <input type="text" id="imgUrlInput" placeholder="Photo link (URL) paste karein...">
+        <input type="text" id="imgUrlInput" placeholder="Photo link (URL) yahan paste karein...">
         <button id="postButton">Post to Public Board</button>
     </div>
 
-    <div class="feed" id="postFeed">
-        <!-- Data will appear here -->
-    </div>
+    <div class="feed" id="postFeed"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyA8QyetPW2sVH3CVENKQIhajmQq-N1N4dE",
         authDomain: "solution-hub-2e11d.firebaseapp.com",
@@ -64,14 +59,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 1. Function to Save Post
+    // 1. Post bhejne ka function
     document.getElementById('postButton').onclick = function() {
         const name = document.getElementById('nameInput').value;
         const msg = document.getElementById('messageInput').value;
         const img = document.getElementById('imgUrlInput').value;
 
-        if (name.trim() === "" || msg.trim() === "") {
-            alert("Naam aur Sawal likhna jaruri hai!");
+        if (name === "" || msg === "") {
+            alert("Naam aur Sawal jaruri hai!");
             return;
         }
 
@@ -84,36 +79,28 @@
             image: img,
             timestamp: Date.now()
         }).then(() => {
-            alert("Sawal Post ho gaya!");
-            // Clearing Inputs
+            alert("Post successful!");
             document.getElementById('nameInput').value = "";
             document.getElementById('messageInput').value = "";
             document.getElementById('imgUrlInput').value = "";
-        }).catch((error) => {
-            alert("Error: " + error.message);
         });
     };
 
-    // 2. Global Delete Function
+    // 2. Delete Function (Global window object mein dala taaki HTML se chal sake)
     window.deletePost = function(postId) {
-        if(confirm("Kya aap such me ye post delete karna chahte hain?")) {
+        if(confirm("Kya aap ye post delete karna chahte hain?")) {
             remove(ref(db, 'posts/' + postId))
-            .then(() => alert("Post delete ho gayi!"))
-            .catch((error) => alert("Error: " + error.message));
+            .then(() => alert("Post Deleted!"));
         }
     };
 
-    // 3. Toggle Reply Section
+    // 3. Toggle Reply Box
     window.toggleReply = function(postId) {
         const replyDiv = document.getElementById('reply-' + postId);
-        if (replyDiv.style.display === 'block') {
-            replyDiv.style.display = 'none';
-        } else {
-            replyDiv.style.display = 'block';
-        }
+        replyDiv.style.display = replyDiv.style.display === 'block' ? 'none' : 'block';
     };
 
-    // 4. Load Posts in Real-time
+    // 4. Data Load karna
     onValue(ref(db, 'posts'), (snapshot) => {
         const postFeed = document.getElementById('postFeed');
         postFeed.innerHTML = ""; 
@@ -126,7 +113,7 @@
                 <div class="card">
                     <h3><i class="fas fa-user-circle"></i> \${data.username}</h3>
                     <p>\${data.question}</p>
-                    \${data.image ? `<img src="\${data.image}" alt="Post Image">` : ""}
+                    \${data.image ? `<img src="\${data.image}">` : ""}
                     
                     <div class="post-actions">
                         <button class="action-btn" onclick="toggleReply('\${key}')">
@@ -143,7 +130,6 @@
                     </div>
                 </div>
             `;
-            // Newest posts on top
             postFeed.innerHTML = postHtml + postFeed.innerHTML;
         });
     });
