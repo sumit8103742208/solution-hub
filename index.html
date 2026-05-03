@@ -1,72 +1,71 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solution Hub - Public Board</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root { --neon: #deff9a; --bg: #0a0a0a; }
+        :root { --neon: #deff9a; --bg: #0a0a0a; --card: #1a1a1a; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; }
-        header { text-align: center; border-bottom: 2px solid var(--neon); padding-bottom: 20px; }
-        .post-box { background: #111; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #333; }
-        input, textarea { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; margin-bottom: 10px; border-radius: 8px; box-sizing: border-box; }
-        button { background: var(--neon); color: black; border: none; padding: 12px 25px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; }
-        .feed { margin-top: 40px; }
-        .card { background: #1a1a1a; border-radius: 12px; padding: 15px; margin-bottom: 20px; border-left: 5px solid var(--neon); }
-        .card h3 { margin: 0; color: var(--neon); font-size: 18px; display: flex; align-items: center; gap: 10px; }
-        .card p { color: #ccc; line-height: 1.6; }
-        .card img { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid #333; }
-        .post-actions { margin-top: 15px; display: flex; gap: 15px; border-top: 1px solid #333; padding-top: 10px; }
+        .container { max-width: 600px; margin: auto; }
+        h1 { text-align: center; color: var(--neon); }
+        
+        .input-group { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #333; margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; }
+        
+        button#mainBtn { width: 100%; padding: 15px; background: var(--neon); border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        button#mainBtn:hover { background: #c4e67a; transform: translateY(-2px); }
+
+        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 4px solid var(--neon); animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .post-actions { margin-top: 15px; display: flex; gap: 20px; border-top: 1px solid #333; padding-top: 10px; }
         .action-btn { background: none; border: none; color: var(--neon); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px; }
         .delete-btn { color: #ff4d4d; }
-        .reply-section { margin-top: 10px; padding: 10px; background: #222; border-radius: 8px; display: none; }
+        
+        .reply-box { margin-top: 10px; padding: 10px; background: #222; border-radius: 8px; display: none; }
+        img.post-img { width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid #444; }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>💡 Solution Hub Board</h1>
-        <p>Bina login ke apna sawal post karein aur community se jawab payein.</p>
-    </header>
+    <h1>💡 Solution Hub Board</h1>
+    <p style="text-align: center; color: #888;">Bina login ke post karein aur community se judein.</p>
 
-    <div class="post-box">
-        <input type="text" id="nameInput" placeholder="Aapka Naam...">
-        <textarea id="messageInput" rows="4" placeholder="Apna Sawal/Problem likhein..."></textarea>
-        <input type="text" id="imgUrlInput" placeholder="Photo link (URL) yahan paste karein...">
-        <button id="postButton">Post to Public Board</button>
+    <div class="input-group">
+        <input type="text" id="userName" placeholder="Aapka Naam...">
+        <textarea id="userMsg" rows="3" placeholder="Apna Sawal likhein..."></textarea>
+        <input type="text" id="imgUrl" placeholder="Photo link (URL) yahan paste karein (Optional)...">
+        <button id="mainBtn" onclick="addPost()">Post to Public Board</button>
     </div>
 
-    <div class="feed" id="postFeed"></div>
+    <div id="postFeed">
+        </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+    import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyA8QyetPW2sVH3CVENKQIhajmQq-N1N4dE",
-        authDomain: "solution-hub-2e11d.firebaseapp.com",
-        projectId: "solution-hub-2e11d",
-        databaseURL: "https://solution-hub-2e11d-default-rtdb.firebaseio.com",
-        storageBucket: "solution-hub-2e11d.firebasestorage.app",
-        messagingSenderId: "1055199293380",
-        appId: "1:1055199293380:web:9b95ec33bc1609d184fe91"
+        databaseURL: "https://solution-hub-2e11d-default-rtdb.firebaseio.com" 
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 1. Post bhejne ka function
-    document.getElementById('postButton').onclick = function() {
-        const name = document.getElementById('nameInput').value;
-        const msg = document.getElementById('messageInput').value;
-        const img = document.getElementById('imgUrlInput').value;
+    // 1. Post Save Karne Ka Function
+    window.addPost = function() {
+        const name = document.getElementById('userName').value;
+        const msg = document.getElementById('userMsg').value;
+        const img = document.getElementById('imgUrl').value;
 
         if (name === "" || msg === "") {
-            alert("Naam aur Sawal jaruri hai!");
+            alert("Naam aur Sawal dono likhna zaroori hai!");
             return;
         }
 
@@ -76,63 +75,72 @@
         set(newPostRef, {
             username: name,
             question: msg,
-            image: img,
-            timestamp: Date.now()
+            image: img || null,
+            time: Date.now()
         }).then(() => {
-            alert("Post successful!");
-            document.getElementById('nameInput').value = "";
-            document.getElementById('messageInput').value = "";
-            document.getElementById('imgUrlInput').value = "";
+            document.getElementById('userName').value = "";
+            document.getElementById('userMsg').value = "";
+            document.getElementById('imgUrl').value = "";
+            alert("Post ho gaya!");
+        }).catch((error) => {
+            alert("Galti: " + error.message);
         });
     };
 
-    // 2. Delete Function (Global window object mein dala taaki HTML se chal sake)
-    window.deletePost = function(postId) {
-        if(confirm("Kya aap ye post delete karna chahte hain?")) {
-            remove(ref(db, 'posts/' + postId))
-            .then(() => alert("Post Deleted!"));
-        }
-    };
-
-    // 3. Toggle Reply Box
-    window.toggleReply = function(postId) {
-        const replyDiv = document.getElementById('reply-' + postId);
-        replyDiv.style.display = replyDiv.style.display === 'block' ? 'none' : 'block';
-    };
-
-    // 4. Data Load karna
+    // 2. Data Read Karne Ka Function
     onValue(ref(db, 'posts'), (snapshot) => {
         const postFeed = document.getElementById('postFeed');
-        postFeed.innerHTML = ""; 
+        postFeed.innerHTML = "";
         
-        snapshot.forEach((childSnapshot) => {
-            const data = childSnapshot.val();
-            const key = childSnapshot.key;
-            
-            const postHtml = `
-                <div class="card">
-                    <h3><i class="fas fa-user-circle"></i> \${data.username}</h3>
-                    <p>\${data.question}</p>
-                    \${data.image ? `<img src="\${data.image}">` : ""}
+        if (snapshot.exists()) {
+            let postsArray = [];
+            snapshot.forEach((child) => {
+                postsArray.push({ id: child.key, ...child.val() });
+            });
+
+            // Nayi posts upar dikhane ke liye reverse
+            postsArray.reverse().forEach((post) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3 style="margin:0; color:var(--neon);"><i class="fas fa-user-circle"></i> \${post.username}</h3>
+                    <p style="margin:10px 0; line-height:1.5;">\${post.question}</p>
+                    \${post.image ? `<img src="\${post.image}" class="post-img">` : ""}
                     
                     <div class="post-actions">
-                        <button class="action-btn" onclick="toggleReply('\${key}')">
-                            <i class="fas fa-reply"></i> Reply
+                        <button class="action-btn" onclick="toggleReply('\${post.id}')">
+                            <i class="fas fa-comment"></i> Reply
                         </button>
-                        <button class="action-btn delete-btn" onclick="deletePost('\${key}')">
+                        <button class="action-btn delete-btn" onclick="deletePost('\${post.id}')">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
 
-                    <div id="reply-\${key}" class="reply-section">
-                        <input type="text" placeholder="Apna jawab likhein...">
-                        <button class="action-btn" style="width: auto; padding: 5px 15px;">Send</button>
+                    <div id="reply-\${post.id}" class="reply-box">
+                        <input type="text" placeholder="Apna jawab likhein..." style="font-size:12px;">
+                        <button class="action-btn" style="background:var(--neon); color:black; padding:5px 10px; border-radius:5px; margin-top:5px;">Send</button>
                     </div>
-                </div>
-            `;
-            postFeed.innerHTML = postHtml + postFeed.innerHTML;
-        });
+                `;
+                postFeed.appendChild(card);
+            });
+        } else {
+            postFeed.innerHTML = "<p style='text-align:center; color:#666;'>Abhi tak koi post nahi hai.</p>";
+        }
     });
+
+    // 3. Delete Function
+    window.deletePost = function(postId) {
+        if(confirm("Kya aap ise delete karna chahte hain?")) {
+            remove(ref(db, 'posts/' + postId));
+        }
+    };
+
+    // 4. Reply Toggle Function
+    window.toggleReply = function(postId) {
+        const box = document.getElementById('reply-' + postId);
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    };
+
 </script>
 
 </body>
